@@ -11,3 +11,4 @@ wheels/
 
 # origin enviroments
 .env
+nohup.out

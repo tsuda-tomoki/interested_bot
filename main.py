@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 import getseasonall
+import kyomiarune
 import typing
 import os
 from dotenv import load_dotenv
@@ -20,7 +21,7 @@ async def on_ready():
     print(f'We have logged in as {client.user}')
     
     # ステータスの更新
-    new_activity = f"豊橋のラッコ"
+    new_activity = "豊橋のラッコ"
     await client.change_presence(activity = discord.Game(new_activity))
     
     # スラッシュコマンドの同期
@@ -60,5 +61,11 @@ async def seasonall_autocompletion(
 @tree.command(name = "kyomiarune", description = "自称クラウドが興味があるアニメをリストに追加します")
 async def kyomiarune_command(interaction: discord.Interaction,name:str):
     await interaction.response.send_message(f"{name}、興味あるね")
+
+@tree.command(name = "kyomiarunelist", description = "自称クラウドが興味があるアニメをリストを公開します")
+async def kyomiarunelist_command(interaction: discord.Interaction):
+    result = kyomiarune.kyomiarunelist()
+    embed = discord.Embed(title = "興味あるね", color = 0xff0000, description = '\n'.join(result))
+    await interaction.response.send_message(embed = embed)
 
 client.run(os.getenv('CLIENT_ID'))
