@@ -35,6 +35,7 @@ def seasonall_search(year, season):
             
         else:
             print(f"エラー: {result.status_code}")
+            print(result.json())
             break
 
     for work in allData:

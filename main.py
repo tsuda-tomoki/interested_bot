@@ -60,7 +60,12 @@ async def seasonall_autocompletion(
     
 @tree.command(name = "kyomiarune", description = "自称クラウドが興味があるアニメをリストに追加します")
 async def kyomiarune_command(interaction: discord.Interaction,name:str):
-    await interaction.response.send_message(f"{name}、興味あるね")
+    searchid = kyomiarune.kyomiaruneId(name)
+    result = kyomiarune.kyomiaruneadd(searchid)
+    if result == True:
+        await interaction.response.send_message(f"{name}、興味あるね")
+    else:
+        await interaction.response.send_message("登録に失敗しました。ログを確認してください")
 
 @tree.command(name = "kyomiarunelist", description = "自称クラウドが興味があるアニメをリストを公開します")
 async def kyomiarunelist_command(interaction: discord.Interaction):
