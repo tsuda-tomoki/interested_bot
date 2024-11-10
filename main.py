@@ -72,5 +72,14 @@ async def kyomiarunelist_command(interaction: discord.Interaction):
     result = kyomiarune.kyomiarunelist()
     embed = discord.Embed(title = "興味あるね", color = 0xff0000, description = '\n'.join(result))
     await interaction.response.send_message(embed = embed)
+    
+@tree.command(name = "kyominaine", description = "自称クラウドが見たアニメをリストから削除します")
+async def kyominaine_command(interaction: discord.Interaction,name:str):
+    searchid = kyomiarune.kyomiaruneId(name)
+    result = kyomiarune.kyomiarunedelete(searchid)
+    if result == True:
+        await interaction.response.send_message(f"{name}、興味ないね")
+    else:
+        await interaction.response.send_message("削除に失敗しました。ログを確認してください")
 
 client.run(os.getenv('CLIENT_ID'))

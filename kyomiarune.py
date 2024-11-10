@@ -83,3 +83,23 @@ def kyomiaruneadd (work_id):
         print(f"登録のエラー: {result.status_code}")
         print(result.json())  
         return False
+    
+def kyomiarunedelete (work_id):
+    # 認証ヘッダーとリクエストのパラメーター
+    headersValue = {"Authorization": os.getenv('API_KEY')}
+    paramsValue = {
+    'work_id': f'{work_id}',
+    'kind': 'no_select'
+    }
+    url = "https://api.annict.com/v1/me/statuses"
+    
+    result = requests.post(url, headers=headersValue, params=paramsValue)
+    print(result)
+    
+    if result.status_code == 204:
+        print("削除成功")
+        return True
+    else:
+        print(f"削除のエラー: {result.status_code}")
+        print(result.json())  
+        return False

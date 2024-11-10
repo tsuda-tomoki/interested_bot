@@ -2,7 +2,7 @@
 趣味で作成している Discord bot
 
 ## Enviroment
-ラズパイ5
+Linux
 
 ## Use Tech
 * uv
