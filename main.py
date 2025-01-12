@@ -59,6 +59,7 @@ async def seasonall_autocompletion(
         return data
     
 @tree.command(name = "kyomiarune", description = "自称クラウドが興味があるアニメをリストに追加します")
+@app_commands.check(is_allowed_user)
 async def kyomiarune_command(interaction: discord.Interaction,name:str):
     searchid = kyomiarune.kyomiaruneId(name)
     result = kyomiarune.kyomiaruneadd(searchid)
@@ -74,6 +75,7 @@ async def kyomiarunelist_command(interaction: discord.Interaction):
     await interaction.response.send_message(embed = embed)
     
 @tree.command(name = "kyominaine", description = "自称クラウドが見たアニメをリストから削除します")
+@app_commands.check(is_allowed_user)
 async def kyominaine_command(interaction: discord.Interaction,name:str):
     searchid = kyomiarune.kyomiaruneId(name)
     result = kyomiarune.kyomiarunedelete(searchid)
@@ -81,5 +83,11 @@ async def kyominaine_command(interaction: discord.Interaction,name:str):
         await interaction.response.send_message(f"{name}、興味ないね")
     else:
         await interaction.response.send_message("削除に失敗しました。ログを確認してください")
+
+# ここからオプション
+
+def is_allowed_user(interaction: discord.Interaction) -> bool:
+    allowed_users = [349052901223825408]  
+    return interaction.user.id in allowed_users
 
 client.run(os.getenv('CLIENT_ID'))
