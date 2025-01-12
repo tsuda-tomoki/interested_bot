@@ -42,6 +42,10 @@ async def test_command(interaction: discord.Interaction, text:str):
     embed.add_field(name = "てすと",value = text)
     await interaction.response.send_message(embed = embed)
     
+def is_allowed_user(interaction: discord.Interaction) -> bool:
+    allowed_users = [349052901223825408]  
+    return interaction.user.id in allowed_users
+    
 @tree.command(name = "seasonall", description = "〇〇〇〇年の春夏秋冬のアニメ一覧を出します")
 async def seasonall_command(interaction: discord.Interaction, year:str, season:str):
     result = getseasonall.seasonall_search(year = year, season = season)
@@ -83,11 +87,5 @@ async def kyominaine_command(interaction: discord.Interaction,name:str):
         await interaction.response.send_message(f"{name}、興味ないね")
     else:
         await interaction.response.send_message("削除に失敗しました。ログを確認してください")
-
-# ここからオプション
-
-def is_allowed_user(interaction: discord.Interaction) -> bool:
-    allowed_users = [349052901223825408]  
-    return interaction.user.id in allowed_users
 
 client.run(os.getenv('CLIENT_ID'))
