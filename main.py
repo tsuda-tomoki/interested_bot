@@ -5,6 +5,8 @@ import kyomiarune
 import typing
 import os
 from dotenv import load_dotenv
+import feedparser
+import asyncio
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -13,6 +15,12 @@ client = discord.Client(intents =intents)
 tree = app_commands.CommandTree(client)
 
 load_dotenv()
+
+last_published = None
+RSS_URL = "https://yamadashy.github.io/tech-blog-rss-feed/feeds/rss.xml"
+# 過去に通知した記事のURLを記録
+notified_articles = set()
+first_run = True  # 初回実行フラグ
 
 @client.event
 async def on_ready():
@@ -23,6 +31,12 @@ async def on_ready():
     # ステータスの更新
     new_activity = "豊橋のラッコ"
     await client.change_presence(activity = discord.Game(new_activity))
+    
+    # 初回実行（確実に最初に実行するため `on_ready()` にも追加）
+    await fetch_rss()
+    
+    # 定期実行を開始
+    client.loop.create_task(rss_checker())
     
     # スラッシュコマンドの同期
     await tree.sync()
@@ -43,9 +57,9 @@ async def test_command(interaction: discord.Interaction, text:str):
     await interaction.response.send_message(embed = embed)
 
 # ユーザ制御・リストのIDでフィルター
-def is_allowed_user(interaction: discord.Interaction) -> bool:
-    allowed_users = [349052901223825408]  
-    return interaction.user.id in allowed_users
+# def is_allowed_user(interaction: discord.Interaction) -> bool:
+#   allowed_users = [349052901223825408]  
+#   return interaction.user.id in allowed_users
 
 # Annict API を叩いて春夏秋冬の放映アニメを検索する
 @tree.command(name = "seasonall", description = "〇〇〇〇年の春夏秋冬のアニメ一覧を出します")
@@ -64,6 +78,51 @@ async def seasonall_autocompletion(
         for season_select in ['spring', 'summer', 'autumn', 'winter']:
             data.append(app_commands.Choice(name = season_select, value = season_select))
         return data
+    
+async def fetch_rss():
+    """RSSフィードを取得し、新しい記事があればDiscordに送信"""
+    global first_run, notified_articles
+    feed = feedparser.parse(RSS_URL)
+    
+    if not feed.entries:
+        print("⚠ RSSフィードの取得に失敗")
+        return
+    
+    # Discordチャンネルを取得
+    channel = client.get_channel(1210555707901091940)
+    
+    new_articles = []
+    article_count = 10 if first_run else 100  # 初回は最新10件、それ以降はすべて
+
+    # RSSのエントリーを新しい順にチェック
+    for entry in feed.entries[:article_count]:
+        article_url = entry.link  # 記事のURL
+
+        # 既に通知済みの記事はスキップ
+        if article_url in notified_articles:
+            continue
+
+        new_articles.append(entry)
+        notified_articles.add(article_url)  # 通知済みリストに追加
+
+        # 取得した記事を送信（新しい記事があれば）
+    if new_articles:
+        for entry in reversed(new_articles):  # 古い記事から順に送信
+            await channel.send(f"📰 **新しい記事が公開されたよ！**\n📌 [{entry.title}]({entry.link})")
+            print("✅ 記事を送信しました:", entry.title)
+    else:
+        print("📭 新しい記事はありません")
+            
+async def rss_checker():
+    """一定間隔でRSSフィードをチェック"""
+    await client.wait_until_ready()
+    
+    # 初回実行（Bot起動直後にすぐチェック）
+    await fetch_rss()
+    
+    while not client.is_closed():
+        await fetch_rss()
+        await asyncio.sleep(60)  # ⏳ 30分ごとにチェック（1800秒）
 
 # 作ったものの微妙だった機能 ↓
 
